@@ -360,45 +360,38 @@ App live at EC2_IP:8000 and EC2_IP:8501
 
 ### Step 2: Install Prerequisites on EC2
 
-SSH into your instance and run **all of the following** — the deploy script won't work without them:
+SSH into your instance and run the setup script (does everything in one go):
 
 ```bash
-# 1. Update packages
-sudo apt update && sudo apt upgrade -y
-
-# 2. Install Git (required to clone the repo)
-sudo apt install -y git
-
-# 3. Install Docker Engine
-sudo apt install -y ca-certificates curl gnupg lsb-release
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-# 4. Allow ubuntu user to run Docker without sudo
-sudo usermod -aG docker ubuntu
-newgrp docker
-
-# 5. Verify everything is installed
-git --version          # git 2.x.x
-docker --version       # Docker 24.x.x
-docker compose version # Docker Compose v2.x.x
+# Download and run the setup script
+curl -o setup-ec2.sh https://raw.githubusercontent.com/<your-username>/<your-repo>/main/setup-ec2.sh
+chmod +x setup-ec2.sh
+./setup-ec2.sh
 ```
 
-> **Important:** The CI/CD pipeline uses `docker compose` (v2 plugin syntax).
-> Do NOT install the old `docker-compose` (v1 standalone) — use `docker-compose-plugin` above.
+Or copy the contents of `setup-ec2.sh` from this repo and run it manually. It installs:
+- Git
+- Docker Engine (from official Docker repo, not Ubuntu's default)
+- Docker Compose v2 plugin (`docker compose`, NOT `docker-compose`)
+- Creates `/app` directory owned by `ubuntu`
 
-### Step 3: Create the /app directory (first time only)
+**What it installs and why:**
+
+| Package | Why needed |
+|---------|-----------|
+| `git` | CI/CD clones the repo on first deploy, pulls on subsequent deploys |
+| `docker-ce` | Builds and runs the API + UI containers |
+| `docker-compose-plugin` | `docker compose up --build -d` in the deploy script |
+| `/app` directory | Where the repo is cloned on EC2 |
+
+> **Critical:** After the script finishes, **log out and log back in** before pushing to deploy.
+> This is required for Docker group permissions to take effect in new SSH sessions (including GitHub Actions).
+> Without this step, deploy will fail with `permission denied while trying to connect to Docker daemon`.
 
 ```bash
-sudo mkdir -p /app
-sudo chown ubuntu:ubuntu /app
+# After re-login, verify:
+docker run hello-world       # should print "Hello from Docker!"
+docker compose version       # should print Docker Compose version 2.x.x
 ```
 
 ### Step 4: Add GitHub Secrets
