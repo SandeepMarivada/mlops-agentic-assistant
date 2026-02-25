@@ -64,9 +64,16 @@ jobs:
             echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" > .env
             echo "MODEL_NAME=openai/gpt-4o-mini" >> .env
 
+            # Stop running containers
+            docker compose down --remove-orphans || true
+
+            # Free disk space: remove old images, build cache, stopped containers
+            echo "Freeing disk space..."
+            docker system prune -af
+            df -h /
+
             # Build and restart containers
             echo "Building and starting containers..."
-            docker compose down --remove-orphans || true
             docker compose up --build -d
 
             # Wait a moment then verify both containers are running
