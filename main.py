@@ -17,6 +17,7 @@ Endpoints:
 import asyncio
 import os
 from collections import defaultdict
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
@@ -24,6 +25,19 @@ from pydantic import BaseModel
 
 from agent import agent
 from rag import load_and_index_documents
+
+# ── Lifespan (startup logic) ───────────────────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Index documents into ChromaDB on startup if not already indexed."""
+    if not os.path.exists("./chroma_db"):
+        print("ChromaDB not found. Indexing documents on startup...")
+        load_and_index_documents()
+        print("Documents indexed successfully!")
+    else:
+        print("ChromaDB found. Skipping indexing.")
+    yield  # app runs here
 
 # ── App setup ─────────────────────────────────────────────────────────────────
 
@@ -35,6 +49,7 @@ app = FastAPI(
         "Features: session memory, multi-agent collaboration, grounded answers."
     ),
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 # ── Session Memory (Module 10 + 11) ───────────────────────────────────────────
@@ -74,19 +89,6 @@ class HistoryMessage(BaseModel):
 class HistoryResponse(BaseModel):
     session_id: str
     messages: list[HistoryMessage]
-
-
-# ── Startup event ─────────────────────────────────────────────────────────────
-
-@app.on_event("startup")
-async def startup_event():
-    """On startup, index documents if ChromaDB doesn't exist yet."""
-    if not os.path.exists("./chroma_db"):
-        print("ChromaDB not found. Indexing documents on startup...")
-        load_and_index_documents()
-        print("Documents indexed successfully!")
-    else:
-        print("ChromaDB found. Skipping indexing.")
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
