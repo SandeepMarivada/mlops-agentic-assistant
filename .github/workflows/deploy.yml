@@ -32,6 +32,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set lowercase owner
+        run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -45,7 +48,7 @@ jobs:
           context: .
           file: Dockerfile.api
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/mlops-api:latest
+          tags: ghcr.io/${{ env.OWNER }}/mlops-api:latest
 
       - name: Build and push UI image
         uses: docker/build-push-action@v5
@@ -53,7 +56,7 @@ jobs:
           context: .
           file: Dockerfile.ui
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/mlops-ui:latest
+          tags: ghcr.io/${{ env.OWNER }}/mlops-ui:latest
 
 
   # ── Job 2: Pull pre-built images on EC2 and start containers ─────────────────
