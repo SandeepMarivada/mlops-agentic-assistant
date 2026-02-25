@@ -9,7 +9,6 @@ version: "3.9"
 services:
 
   api:
-    image: ghcr.io/sandeepmarivada/mlops-api:latest  # pulled from GitHub Container Registry
     build:
       context: .
       dockerfile: Dockerfile.api
@@ -20,7 +19,6 @@ services:
       - .env                         # loads OPENROUTER_API_KEY and MODEL_NAME
     volumes:
       - chroma_data:/app/chroma_db   # persist vector DB across restarts
-      - hf_cache:/root/.cache/huggingface  # cache HuggingFace model after first download
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -30,7 +28,6 @@ services:
     restart: unless-stopped
 
   ui:
-    image: ghcr.io/sandeepmarivada/mlops-ui:latest   # pulled from GitHub Container Registry
     build:
       context: .
       dockerfile: Dockerfile.ui
@@ -46,4 +43,3 @@ services:
 
 volumes:
   chroma_data:                       # named volume — survives container restarts
-  hf_cache:                          # HuggingFace model cache — downloaded once, reused
