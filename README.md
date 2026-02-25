@@ -1,7 +1,7 @@
 # MLOps Agentic AI Assistant
 **By Sandeep Marivada**
 
-An AI-powered assistant that answers MLOps questions using a RAG knowledge base enriched with real internet documentation, a LangGraph ReAct agent, CrewAI multi-agent collaboration, and a FastAPI + Streamlit interface. Built as part of the MLOps Platform Engineering Course (Assignment 3 — Modules 10–13).
+An AI-powered assistant that answers MLOps questions using a RAG knowledge base enriched with real internet documentation, a LangGraph ReAct agent, CrewAI multi-agent collaboration, and a FastAPI + Streamlit interface. Built as part of the MLOps Platform Engineering Course (Assignment 3 — Modules 1–4).
 
 ---
 
@@ -56,10 +56,10 @@ User → Streamlit UI (port 8501)
 
 | Module | Topic | Problem Solved | Implementation |
 |--------|-------|---------------|----------------|
-| 10 | LLM & Agentic AI | Chatbots fail to reason autonomously | `agent.py` — LangGraph ReAct agent |
-| 11 | Python for Agents | Agents need reliable backend APIs | `main.py` — FastAPI async backend |
-| 12 | Agent Frameworks | Manual orchestration is error-prone | `agent.py` (LangGraph) + `crew.py` (CrewAI) |
-| 13 | RAG Systems | LLMs hallucinate without grounding | `rag.py` — ChromaDB + HuggingFace embeddings |
+| 1 | LLM & Agentic AI | Chatbots fail to reason autonomously | `agent.py` — LangGraph ReAct agent |
+| 2 | Python for Agents | Agents need reliable backend APIs | `main.py` — FastAPI async backend |
+| 3 | Agent Frameworks | Manual orchestration is error-prone | `agent.py` (LangGraph) + `crew.py` (CrewAI) |
+| 4 | RAG Systems | LLMs hallucinate without grounding | `rag.py` — ChromaDB + HuggingFace embeddings |
 
 ---
 
@@ -77,7 +77,7 @@ mlops-agentic-assistant/
 │   └── test_api.py             # 10 pytest tests
 │
 ├── data/
-│   ├── mlops_docs.txt          # Core knowledge base (all 13 modules)
+│   ├── mlops_docs.txt          # Core knowledge base (all 4 modules)
 │   ├── mlflow_readme.txt       # MLflow README (GitHub)
 │   ├── mlflow_tracking.txt     # MLflow tracking module
 │   ├── mlflow_concepts.txt     # MLflow changelog
@@ -100,11 +100,11 @@ mlops-agentic-assistant/
 │   └── github_actions_ml.txt  # GitHub Actions Overview (docs.github.com)
 │
 ├── config.py                   # API keys, model name, paths
-├── rag.py                      # Module 13: RAG system (ChromaDB + embeddings)
-├── tools.py                    # Module 12: Agent tools
-├── agent.py                    # Module 10+12: LangGraph ReAct agent
-├── crew.py                     # Module 12: CrewAI multi-agent
-├── main.py                     # Module 11: FastAPI async backend
+├── rag.py                      # Module 4: RAG system (ChromaDB + embeddings)
+├── tools.py                    # Module 3: Agent tools
+├── agent.py                    # Module 1+3: LangGraph ReAct agent
+├── crew.py                     # Module 3: CrewAI multi-agent
+├── main.py                     # Module 2: FastAPI async backend
 ├── ui.py                       # Streamlit chat UI
 ├── ingest_web.py               # Web scraper — fetches real internet docs into data/
 │
