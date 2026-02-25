@@ -1,0 +1,45 @@
+version: "3.9"
+
+# ── Local development multi-container setup ───────────────────────────────────
+# Usage:
+#   docker-compose up --build        # start everything
+#   docker-compose down              # stop everything
+#   docker-compose logs -f api       # tail API logs
+
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: mlops-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env                         # loads OPENROUTER_API_KEY and MODEL_NAME
+    volumes:
+      - chroma_data:/app/chroma_db   # persist vector DB across restarts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: mlops-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000      # UI talks to api container by service name
+    depends_on:
+      api:
+        condition: service_healthy   # wait for API to be healthy before starting UI
+    restart: unless-stopped
+
+volumes:
+  chroma_data:                       # named volume — survives container restarts

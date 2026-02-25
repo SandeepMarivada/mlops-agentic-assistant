@@ -1,0 +1,396 @@
+# MLOps Knowledge Base
+
+## Module 1: MLOps Fundamentals
+MLOps (Machine Learning Operations) is the practice of applying DevOps principles to machine learning systems.
+It combines ML, DevOps, and Data Engineering to automate and standardize the ML lifecycle.
+
+The ML lifecycle consists of:
+1. Data Collection and Preparation
+2. Model Development and Training
+3. Model Evaluation and Validation
+4. Model Deployment and Serving
+5. Model Monitoring and Retraining
+
+Without MLOps, ML systems fail due to:
+- No version control for data or models
+- Manual, error-prone deployment processes
+- No monitoring of model performance in production
+- Lack of reproducibility in experiments
+- Siloed teams with no collaboration
+
+MLOps maturity levels:
+- Level 0: Manual process, no automation
+- Level 1: ML pipeline automation
+- Level 2: CI/CD pipeline automation
+
+---
+
+## Module 2: Data Versioning with DVC
+DVC (Data Version Control) is a tool for versioning datasets and ML models.
+It works alongside Git to track large files stored in S3, GCS, Azure Blob, or local storage.
+
+Key DVC commands:
+- dvc init: Initialize DVC in a project
+- dvc add data/: Track a dataset
+- dvc remote add: Configure remote storage (S3, GCS)
+- dvc push: Upload data to remote storage
+- dvc pull: Download data from remote
+- dvc repro: Reproduce ML pipeline
+
+Problem solved: Training data changes break reproducibility.
+Solution: DVC tracks data versions alongside code, so any experiment can be reproduced exactly.
+
+DVC pipelines define stages in dvc.yaml:
+stages:
+  train:
+    cmd: python train.py
+    deps:
+      - data/train.csv
+    outs:
+      - models/model.pkl
+
+---
+
+## Module 3: Experiment Tracking with MLflow
+MLflow is an open-source platform for managing the ML lifecycle including experiment tracking.
+
+Core MLflow components:
+1. MLflow Tracking - Log parameters, metrics, and artifacts
+2. MLflow Projects - Package ML code for reproducibility
+3. MLflow Models - Standard model packaging format
+4. MLflow Registry - Central model store
+
+Key MLflow tracking API:
+- mlflow.start_run(): Start a new experiment run
+- mlflow.log_param("lr", 0.01): Log a hyperparameter
+- mlflow.log_metric("accuracy", 0.95): Log a metric
+- mlflow.log_artifact("model.pkl"): Log a file
+- mlflow.sklearn.log_model(model, "model"): Log a sklearn model
+
+Example experiment tracking:
+import mlflow
+with mlflow.start_run():
+    mlflow.log_param("n_estimators", 100)
+    mlflow.log_metric("accuracy", accuracy)
+    mlflow.sklearn.log_model(model, "random_forest")
+
+MLflow UI: Run 'mlflow ui' to view experiments at http://localhost:5000
+
+Problem solved: Experiments are lost without tracking.
+Solution: MLflow logs every experiment run with its parameters, metrics, and artifacts.
+
+---
+
+## Module 4: Model Registry with MLflow
+The MLflow Model Registry provides a central place to manage model lifecycle.
+
+Model stages:
+- None: Initial state after registration
+- Staging: Model under testing/validation
+- Production: Model serving live traffic
+- Archived: Retired models
+
+Registry API:
+- mlflow.register_model(): Register a model version
+- MlflowClient().transition_model_version_stage(): Promote/demote model
+- MlflowClient().get_latest_versions(): Get latest model by stage
+
+Model promotion workflow:
+1. Train model → log to MLflow
+2. Register model in registry
+3. Test in Staging environment
+4. Promote to Production
+5. Old model moves to Archived
+
+Problem solved: No governance over deployed models.
+Solution: Model Registry enforces approval workflow before deployment.
+
+---
+
+## Module 5: Training Pipelines with Argo Workflows / Kubeflow
+Kubeflow is a Kubernetes-native platform for ML workflows.
+Argo Workflows is a container-native workflow engine for Kubernetes.
+
+Kubeflow Pipelines allow you to:
+- Define multi-step ML workflows as Python code
+- Execute pipelines on Kubernetes
+- Track pipeline runs and artifacts
+- Schedule and automate retraining
+
+Kubeflow Pipeline components:
+@component
+def preprocess_data(input_path: str, output_path: OutputPath()):
+    # preprocessing logic
+
+@pipeline
+def ml_pipeline():
+    preprocess = preprocess_data(input_path="gs://bucket/data")
+    train = train_model(data=preprocess.output)
+
+Problem solved: Manual training is not scalable.
+Solution: Kubeflow Pipelines automate and parallelize training on Kubernetes.
+
+Argo Workflows defines DAGs in YAML:
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+spec:
+  templates:
+  - name: ml-pipeline
+    dag:
+      tasks:
+      - name: preprocess
+        template: preprocess-task
+      - name: train
+        template: train-task
+        dependencies: [preprocess]
+
+---
+
+## Module 6: Model Serving with KServe
+KServe (formerly KFServing) is a Kubernetes-native model serving platform.
+
+KServe features:
+- Serverless inference on Kubernetes
+- Supports multiple frameworks: TensorFlow, PyTorch, sklearn, XGBoost, ONNX
+- Auto-scaling including scale-to-zero
+- Canary deployments for A/B testing
+- Model explainability with SHAP/LIME
+
+KServe InferenceService:
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: sklearn-iris
+spec:
+  predictor:
+    sklearn:
+      storageUri: "gs://bucket/sklearn/iris"
+
+Problem solved: Ad-hoc serving lacks scalability.
+Solution: KServe provides production-grade, auto-scaling model serving on Kubernetes.
+
+REST API format:
+POST /v1/models/model-name:predict
+{"instances": [[6.8, 2.8, 4.8, 1.4]]}
+
+---
+
+## Module 7: CI/CD for ML with GitHub Actions
+CI/CD for ML automates testing, validation, and deployment of ML models.
+
+GitHub Actions workflow for ML:
+name: ML CI/CD
+on: [push]
+jobs:
+  train-and-deploy:
+    steps:
+    - name: Run tests
+      run: pytest tests/
+    - name: Train model
+      run: python train.py
+    - name: Validate model
+      run: python validate.py --threshold 0.90
+    - name: Deploy to staging
+      run: kubectl apply -f k8s/staging/
+
+Key practices:
+- Test data pipelines with unit tests
+- Validate model performance before deployment
+- Use environment-based deployment (staging → production)
+- Rollback on performance degradation
+
+Problem solved: ML changes need controlled releases.
+Solution: GitHub Actions automate testing and deployment with gates.
+
+---
+
+## Module 8: Monitoring and Drift Detection
+Model monitoring tracks the health of ML models in production.
+
+Types of drift:
+1. Data Drift: Input data distribution changes from training data
+2. Concept Drift: Relationship between inputs and outputs changes
+3. Prediction Drift: Model output distribution changes
+
+Key metrics to monitor:
+- Model accuracy, precision, recall, F1
+- Input feature statistics (mean, std, min, max)
+- Prediction confidence scores
+- Data quality metrics (missing values, outliers)
+
+Tools for monitoring:
+- Evidently AI: Open-source ML monitoring
+- WhyLogs: Data logging for ML
+- Prometheus + Grafana: Metrics and dashboards
+
+Problem solved: Model quality degrades silently.
+Solution: Automated monitoring with alerting detects drift before it impacts business.
+
+---
+
+## Module 9: Security and Governance
+ML security covers protecting data, models, and infrastructure.
+
+IAM (Identity and Access Management) principles:
+- Least privilege: Grant minimum required permissions
+- Role-based access control (RBAC) for ML resources
+- Service accounts for automated processes
+
+MLOps governance:
+- Audit logs for model training and deployment
+- Data lineage tracking (who accessed what, when)
+- Model cards for documentation
+- Bias detection and fairness testing
+
+Key security practices:
+- Encrypt data at rest and in transit
+- Use secrets managers (AWS Secrets Manager, GCP Secret Manager)
+- Scan container images for vulnerabilities
+- Network policies to isolate ML workloads
+
+Problem solved: Unsecured ML assets risk compliance.
+Solution: IAM + audit trails + encryption ensure compliance.
+
+---
+
+## Module 10: LLM and Agentic AI Basics
+Large Language Models (LLMs) are transformer-based models trained on vast text data.
+
+Key LLM concepts:
+- Tokens: Units of text LLMs process
+- Context window: Maximum input length
+- Temperature: Controls output randomness (0=deterministic, 1=creative)
+- System prompt: Instructions that shape model behavior
+- Few-shot prompting: Providing examples in the prompt
+
+Agentic AI components:
+1. LLM (the brain): Reasons and generates text
+2. Tools: Functions the agent can call
+3. Memory: Short-term (conversation) and long-term (vector DB)
+4. Planning: Multi-step task decomposition
+5. Observation: Processing tool results
+
+ReAct pattern (Reasoning + Acting):
+- Thought: What should I do?
+- Action: Call a tool
+- Observation: Process tool result
+- Repeat until answer is found
+
+OpenRouter provides access to 100+ LLMs through one API.
+Supported models: GPT-4, Claude, Llama, Mistral, Gemma, and more.
+
+Problem solved: Chatbots fail to reason or take actions autonomously.
+Solution: Agentic AI with tool use enables autonomous reasoning and action.
+
+---
+
+## Module 11: Python for Agents with FastAPI
+FastAPI is a modern Python web framework for building APIs.
+
+FastAPI features:
+- Automatic OpenAPI docs at /docs
+- Pydantic data validation
+- Async/await support
+- Type hints throughout
+
+Basic FastAPI application:
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class ChatRequest(BaseModel):
+    message: str
+
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    response = agent.invoke(request.message)
+    return {"response": response}
+
+Running FastAPI:
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+Async patterns for agents:
+- Use async def for non-blocking I/O
+- Use asyncio for concurrent operations
+- Background tasks for long-running operations
+
+Problem solved: Agents need reliable backend APIs.
+Solution: FastAPI provides async, validated, documented APIs for agent backends.
+
+---
+
+## Module 12: Agent Frameworks - LangGraph and CrewAI
+LangGraph is a library for building stateful, multi-actor applications with LLMs.
+
+LangGraph key concepts:
+- StateGraph: Defines the workflow as a graph
+- Nodes: Functions that process state
+- Edges: Transitions between nodes
+- Conditional edges: Dynamic routing based on state
+
+LangGraph agent pattern:
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode, tools_condition
+
+graph = StateGraph(AgentState)
+graph.add_node("llm", call_llm)
+graph.add_node("tools", ToolNode(tools))
+graph.set_entry_point("llm")
+graph.add_conditional_edges("llm", tools_condition)
+graph.add_edge("tools", "llm")
+agent = graph.compile()
+
+CrewAI is for multi-agent orchestration:
+- Agents: Specialized AI workers with roles
+- Tasks: Specific assignments for agents
+- Crews: Groups of agents working together
+- Tools: Shared capabilities across agents
+
+When to use each:
+- LangGraph: Single agent with complex state/tools
+- CrewAI: Multiple specialized agents collaborating
+
+Problem solved: Manual orchestration of agent logic is error-prone.
+Solution: LangGraph/CrewAI provide structured, testable agent workflows.
+
+---
+
+## Module 13: RAG Systems
+RAG (Retrieval-Augmented Generation) grounds LLMs in external knowledge.
+
+RAG pipeline:
+1. Ingestion: Load documents → split into chunks → embed → store in vector DB
+2. Retrieval: Embed query → similarity search → return top-k chunks
+3. Generation: LLM generates answer using retrieved context
+
+Key components:
+- Document Loaders: TextLoader, PDFLoader, WebBaseLoader
+- Text Splitters: RecursiveCharacterTextSplitter (chunk_size, chunk_overlap)
+- Embeddings: HuggingFace (free), OpenAI (paid), Cohere
+- Vector Stores: ChromaDB (local), Pinecone (cloud), FAISS (in-memory)
+- Retrievers: Similarity search, MMR (Max Marginal Relevance)
+
+ChromaDB example:
+from chromadb import Client
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+
+embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+vectorstore = Chroma.from_documents(docs, embeddings, persist_directory="./db")
+retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+
+RAG prompt template:
+"Use the following context to answer the question.
+Context: {context}
+Question: {question}
+Answer:"
+
+Problem solved: LLMs hallucinate without grounding in enterprise data.
+Solution: RAG retrieves relevant documents before generation, reducing hallucination.
+
+Evaluation metrics for RAG:
+- Faithfulness: Is the answer grounded in retrieved context?
+- Answer Relevancy: Does the answer address the question?
+- Context Precision: Are retrieved chunks relevant?
+- Context Recall: Are all relevant chunks retrieved?

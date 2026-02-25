@@ -1,0 +1,633 @@
+# DVC Getting Started
+# Source: https://dvc.org/doc/start
+
+Home
+Install
+macOS
+Windows
+Linux
+Visual Studio Code
+Pre-release Version
+Shell Completion
+IDE Plugins
+Get Started
+Data Pipelines
+Data Pipelines
+Metrics, Parameters, and Plots
+Experiment Management
+Experiment Tracking
+Experimenting Using Pipelines
+Use Cases
+Versioning Data and Models
+Tutorial 👩‍💻
+CI/CD for Machine Learning
+Fast and Secure Data Caching Hub
+Experiment Tracking
+Data Registry
+Tutorial 👩‍💻
+User Guide
+Project Structure
+dvc.yaml Files
+.dvc Files
+.dvcignore Files
+Configuration
+Internal Files
+Data Management
+Remote Storage
+Amazon S3
+Azure Blob Storage
+Google Cloud Storage
+Google Drive
+Aliyun OSS
+SSH & SFTP
+HDFS & WebHDFS
+HTTP
+WebDAV
+Cloud Versioning
+Discovering and Accessing Data
+External Data
+Large Dataset Optimization
+Modifying Large Datasets
+Pipelines
+Defining Pipelines
+Running Pipelines
+Run Cache
+External Dependencies and Outputs
+Experiment Management
+Running Experiments
+Hydra Composition
+Comparing Experiments
+Visualizing Plots
+Sharing Experiments
+How To
+Run DVC on Windows
+Stop Tracking Data
+Update Tracked Data
+Add Deps or Outs to a Stage
+Resolve Merge Conflicts
+Share a DVC Cache
+Integrations
+Ml Frameworks
+Amazon SageMaker
+Databricks
+Evidently
+Hugging Face
+Environment Variables
+Troubleshooting
+Anonymized Usage Analytics
+Glossary
+Upgrading to DVC 3.0
+Command Reference
+add
+artifacts
+artifacts get
+cache
+cache dir
+cache migrate
+check-ignore
+checkout
+commit
+config
+dag
+data status
+destroy
+diff
+doctor
+exp
+exp apply
+exp branch
+exp clean
+exp diff
+exp list
+exp pull
+exp push
+exp remove
+exp rename
+exp run
+exp save
+exp show
+fetch
+freeze
+gc
+get-url
+get
+import-db
+import-url
+import
+init
+install
+list-url
+list
+metrics
+metrics show
+metrics diff
+move
+params
+params diff
+plots
+plots show
+plots diff
+plots templates
+pull
+push
+queue
+queue start
+queue stop
+queue status
+queue logs
+queue remove
+queue kill
+remote
+remote add
+remote modify
+remote default
+remote list
+remote remove
+remote rename
+remove
+repro
+root
+stage
+stage add
+stage list
+status
+studio
+studio login
+studio logout
+studio token
+unfreeze
+unprotect
+update
+version
+Python API Reference
+DVCFileSystem
+artifacts_show()
+exp_show()
+get_url()
+metrics_show()
+open()
+params_show()
+read()
+scm
+Contributing
+DVC Core Project
+Docs and Website
+Changelog
+VS Code Extension
+DVCLive
+Install
+How it Works
+API Reference
+end()
+log_artifact()
+log_image()
+log_metric()
+log_param()
+log_params()
+log_plot()
+log_sklearn_plot()
+make_dvcyaml()
+make_report()
+make_summary()
+monitor_system()
+next_step()
+Ml Frameworks
+Fast.ai
+Hugging Face Accelerate
+Hugging Face Transformers
+Keras
+LightGBM
+MMCV
+Optuna
+PyTorch
+PyTorch Lightning
+PyTorch Lightning Fabric
+Scikit-learn
+TensorFlow
+XGBoost
+Ultralytics YOLO v8
+Environment Variables
+Edit on GitHub
+Get Started with DVC
+🎬 Click to watch a video intro.
+By clicking play, you agree to YouTube's
+Privacy Policy
+and
+Terms of Service
+How cool would it be to track large datasets and machine learning models
+alongside your code, sidestepping all the limitations of storing it in Git?
+Imagine cloning a repository and immediately seeing your datasets, checkpoints
+and models staged in your workspace. Imagine switching to a different version of
+a 100Gb file in less than a second with a
+git checkout
+.
+💫 DVC is your
+"Git for data"
+!
+Installing DVC
+First things first, let's install DVC. The easiest way to install dvc is with
+uv
+or
+pipx
+:
+$
+uv
+tool
+install
+dvc
+# or,
+$
+pipx
+install
+dvc
+Once it's installed, verify dvc is available by running:
+$
+dvc
+--help
+If you see a help message listing dvc commands, you are good to continue!
+See the
+Installation Guide
+for more installation options.
+Initializing a project
+Before we begin, settle on a directory for this guide. Everything we will do
+will be self contained there.
+⚙️ Expand to prepare a project.
+Imagine we want to build an ML project from scratch. Let's start by creating a
+Git repository:
+$
+mkdir
+example-get-started
+$
+cd
+example-get-started
+$
+git init
+This directory name is used in our
+example-get-started
+repo.
+Inside your chosen directory, we will use our current working directory as a
+DVC project
+. Let's initialize it by running
+dvc init
+inside a Git
+project:
+$
+dvc init
+A few
+internal files
+are created
+that should be added to Git:
+$
+git status
+Changes to be committed:
+new file:   .dvc/.gitignore
+new file:   .dvc/config
+...
+$
+git commit
+-m
+"Initialize DVC"
+Now you're ready to DVC!
+Tracking data
+Working inside an
+initialized project
+directory, let's pick a piece of data to work with. We'll use an example
+data.xml
+file, though any text or binary file (or directory) will do. Start by
+running:
+$
+dvc get
+https://github.com/iterative/dataset-registry
+\
+get-started/data.xml
+-o
+data/data.xml
+We used
+dvc get
+above to show how DVC can turn any Git repo into a "
+data
+registry
+".
+dvc get
+can download any file or directory tracked in a
+DVC
+repository
+.
+Use
+dvc add
+to start tracking the dataset file:
+$
+dvc add
+data/data.xml
+DVC stores information about the added file in a special
+.dvc
+file named
+data/data.xml.dvc
+. This small, human-readable metadata file acts as a
+placeholder for the original data for the purpose of Git tracking.
+Next, run the following commands to track changes in Git:
+$
+git add
+data/data.xml.dvc data/.gitignore
+$
+git commit
+-m
+"Add raw data"
+Now the
+metadata about your data
+is versioned alongside your source code,
+while the original data file was added to
+.gitignore
+.
+💡 Expand to get a peek under the hood
+dvc add
+moved the data to the project's
+cache
+, and
+linked
+it back to the
+workspace
+. The
+.dvc/cache
+will
+look like this:
+.dvc/cache/files/md5
+└── 22
+└── a1a2931c8370d3aeedd7183606fd7f
+The hash value of the
+data.xml
+file we just added (
+22a1a29...
+) determines
+the cache path shown above. And if you check
+data/data.xml.dvc
+, you will find
+it there too:
+outs
+:
+-
+md5
+:
+22a1a2931c8370d3aeedd7183606fd7f
+path
+:
+data.xml
+Storing and sharing
+You can upload DVC-tracked data to a variety of storage systems (remote or
+local) referred to as
+"remotes"
+.
+For simplicity, we will use a "local remote" for this guide, which is just a
+directory in the local file system.
+Configuring a remote
+Before pushing data to a remote we need to set it up using the
+dvc remote add
+command:
+Mac/Linux
+$
+mkdir
+/tmp/dvcstore
+$
+dvc remote add
+-d
+myremote /tmp/dvcstore
+Windows (Cmd)
+$
+mkdir
+%TEMP%/dvcstore
+$
+dvc remote add
+-d
+myremote %TEMP%
+\
+dvcstore
+DVC supports many remote
+storage types
+, including Amazon S3, NFS, SSH, Google
+Drive, Azure Blob Storage, and HDFS.
+An example for a common use case is configuring an
+Amazon S3
+remote:
+$
+dvc remote add
+-d
+storage s3://mybucket/dvcstore
+For this to work, you'll need an AWS account and credentials set up to allow
+access.
+To learn more about storage remotes, see the
+Remote Storage Guide
+.
+Uploading data
+Now that a storage remote was configured, run
+dvc push
+to upload data:
+$
+dvc push
+💡 Expand to get a peek under the hood
+dvc push
+copied the data
+cached
+locally to the remote storage we
+set up earlier. The remote storage directory should look like this:
+.../dvcstore/files/md5
+└── 22
+└── a1a2931c8370d3aeedd7183606fd7f
+Usually, we would also want to Git track any code changes that led to the data
+change (
+git add
+,
+git commit
+and
+git push
+).
+Retrieving data
+Once DVC-tracked data and models are stored remotely, they can be downloaded
+with
+dvc pull
+when needed (e.g. in other copies of this
+project
+).
+Usually, we run it after
+git pull
+or
+git clone
+.
+Let's try this now:
+$
+dvc pull
+Expand to simulate a "fresh pull"
+After running
+dvc push
+above, the
+dvc pull
+command afterwards was
+short-circuited by DVC for efficiency. The project's
+data/data.xml
+file, our
+cache
+and the remote storage were all already in sync. We need to
+empty the
+cache
+and delete
+data/data.xml
+from our project if we
+want to have DVC actually moving data around. Let's do that now:
+Mac/Linux
+$
+rm
+-rf
+.dvc/cache
+$
+rm
+-f
+data/data.xml
+Windows (Cmd)
+$
+rmdir
+.dvc
+\
+cache
+$
+del
+data
+\
+data.xml
+Now we can run
+dvc pull
+to retrieve the data from the remote:
+$
+dvc pull
+Making local changes
+Next, let's say we obtained more data from some external source. We will
+simulate this by doubling the dataset contents:
+Mac/Linux
+$
+cp
+data/data.xml /tmp/data.xml
+$
+cat
+/tmp/data.xml
+>>
+data/data.xml
+Windows (Cmd)
+$
+copy
+data
+\
+data.xml %TEMP%
+\
+data.xml
+$
+type
+%TEMP%
+\
+data.xml
+>>
+data
+\
+data.xml
+After modifying the data, run
+dvc add
+again to track the latest version:
+$
+dvc add
+data/data.xml
+Now we can run
+dvc push
+to upload the changes to the remote storage, followed
+by a
+git commit
+to track them:
+$
+dvc push
+$
+git commit
+data/data.xml.dvc
+-m
+"Dataset updates"
+Switching between versions
+A commonly used workflow is to use
+git checkout
+to switch to a branch or
+checkout a specific
+.dvc
+file revision, followed by a
+dvc checkout
+to sync
+data into your
+workspace
+:
+$
+git checkout
+<
+..
+.
+>
+$
+dvc checkout
+Return to a previous version of the dataset
+Let's go back to the original version of the data:
+$
+git checkout
+HEAD~1 data/data.xml.dvc
+$
+dvc checkout
+Let's commit it (no need to do
+dvc push
+this time since this original version
+of the dataset was already saved):
+$
+git commit
+data/data.xml.dvc
+-m
+"Revert dataset updates"
+As you can see, DVC is technically not a version control system by itself! It
+manipulates
+.dvc
+files, whose contents define the data file versions. Git is
+already used to version your code, and now it can also version your data
+alongside it.
+Following This Guide
+To help you understand and use DVC better, consider the following three
+use-cases:
+data pipelines
+,
+experiment tracking
+and
+model management
+.
+You may pick any to start learning about how DVC helps you "solve" that
+scenario!
+Choose a trail to jump into its first chapter:
+Data Pipelines
+- Use DVC as a build system for reproducible, data driven
+pipelines.
+Experiment Management
+- Easily track your experiments and their progress
+by only instrumenting your code, and collaborate on ML experiments like
+software engineers do for code.
+Model Registry
+- Use the DVC model registry to manage the lifecycle of
+your models in an auditable way. Easily access your models and integrate your
+model registry actions into CICD pipelines to follow GitOps best practices.
+Prev
+Next
+Content
+Get Started with DVC
+Installing DVC
+Initializing a project
+Tracking data
+Storing and sharing
+Making local changes
+Switching between versions
+Return to a previous version of the dataset
+Following This Guide
+🐛
+Found an issue? Let us know! Or fix it:
+Edit on GitHub
+❓
+Have a question? Join our chat, we will help you:
+Discord Chat
+🤝
+Data on petabyte scale? Checkout our sister project:
+lakeFS Docs

@@ -1,0 +1,242 @@
+# DVC Pipelines User Guide
+# Source: https://dvc.org/doc/user-guide/pipelines
+
+Home
+Install
+macOS
+Windows
+Linux
+Visual Studio Code
+Pre-release Version
+Shell Completion
+IDE Plugins
+Get Started
+Data Pipelines
+Data Pipelines
+Metrics, Parameters, and Plots
+Experiment Management
+Experiment Tracking
+Experimenting Using Pipelines
+Use Cases
+Versioning Data and Models
+Tutorial 👩‍💻
+CI/CD for Machine Learning
+Fast and Secure Data Caching Hub
+Experiment Tracking
+Data Registry
+Tutorial 👩‍💻
+User Guide
+Project Structure
+dvc.yaml Files
+.dvc Files
+.dvcignore Files
+Configuration
+Internal Files
+Data Management
+Remote Storage
+Amazon S3
+Azure Blob Storage
+Google Cloud Storage
+Google Drive
+Aliyun OSS
+SSH & SFTP
+HDFS & WebHDFS
+HTTP
+WebDAV
+Cloud Versioning
+Discovering and Accessing Data
+External Data
+Large Dataset Optimization
+Modifying Large Datasets
+Pipelines
+Defining Pipelines
+Running Pipelines
+Run Cache
+External Dependencies and Outputs
+Experiment Management
+Running Experiments
+Hydra Composition
+Comparing Experiments
+Visualizing Plots
+Sharing Experiments
+How To
+Run DVC on Windows
+Stop Tracking Data
+Update Tracked Data
+Add Deps or Outs to a Stage
+Resolve Merge Conflicts
+Share a DVC Cache
+Integrations
+Ml Frameworks
+Amazon SageMaker
+Databricks
+Evidently
+Hugging Face
+Environment Variables
+Troubleshooting
+Anonymized Usage Analytics
+Glossary
+Upgrading to DVC 3.0
+Command Reference
+add
+artifacts
+artifacts get
+cache
+cache dir
+cache migrate
+check-ignore
+checkout
+commit
+config
+dag
+data status
+destroy
+diff
+doctor
+exp
+exp apply
+exp branch
+exp clean
+exp diff
+exp list
+exp pull
+exp push
+exp remove
+exp rename
+exp run
+exp save
+exp show
+fetch
+freeze
+gc
+get-url
+get
+import-db
+import-url
+import
+init
+install
+list-url
+list
+metrics
+metrics show
+metrics diff
+move
+params
+params diff
+plots
+plots show
+plots diff
+plots templates
+pull
+push
+queue
+queue start
+queue stop
+queue status
+queue logs
+queue remove
+queue kill
+remote
+remote add
+remote modify
+remote default
+remote list
+remote remove
+remote rename
+remove
+repro
+root
+stage
+stage add
+stage list
+status
+studio
+studio login
+studio logout
+studio token
+unfreeze
+unprotect
+update
+version
+Python API Reference
+DVCFileSystem
+artifacts_show()
+exp_show()
+get_url()
+metrics_show()
+open()
+params_show()
+read()
+scm
+Contributing
+DVC Core Project
+Docs and Website
+Changelog
+VS Code Extension
+DVCLive
+Install
+How it Works
+API Reference
+end()
+log_artifact()
+log_image()
+log_metric()
+log_param()
+log_params()
+log_plot()
+log_sklearn_plot()
+make_dvcyaml()
+make_report()
+make_summary()
+monitor_system()
+next_step()
+Ml Frameworks
+Fast.ai
+Hugging Face Accelerate
+Hugging Face Transformers
+Keras
+LightGBM
+MMCV
+Optuna
+PyTorch
+PyTorch Lightning
+PyTorch Lightning Fabric
+Scikit-learn
+TensorFlow
+XGBoost
+Ultralytics YOLO v8
+Environment Variables
+Edit on GitHub
+Pipelines
+If you find yourself repeating sequence of actions to get or update the results
+of your project, then you may already have a pipeline. For example, a data
+science workflow could involve:
+Gathering data for training and validation
+Extracting useful features from the training dataset
+(Re)training an ML model
+Evaluating the results against the validation set
+DVC helps you
+define
+these stages in a standard YAML format (
+.dvc
+and
+dvc.yaml
+files), making your
+pipeline
+more manageable and
+consistent to reproduce.
+See
+Get Started: Data Pipelines
+for a hands-on introduction to this topic.
+Prev
+Next
+🐛
+Found an issue? Let us know! Or fix it:
+Edit on GitHub
+❓
+Have a question? Join our chat, we will help you:
+Discord Chat
+🤝
+Data on petabyte scale? Checkout our sister project:
+lakeFS Docs

@@ -1,0 +1,88 @@
+# ChromaDB Introduction
+# Source: https://docs.trychroma.com/docs/overview/introduction
+
+Skip to main content
+Chroma Docs
+home page
+Docs
+Chroma Cloud
+Guides
+Integrations
+Reference
+Overview
+Introduction
+Getting Started
+Architecture
+Open Source
+Migration
+Troubleshooting
+Run Chroma
+Chroma Clients
+Client-Server Mode
+Collections
+Manage Collections
+Add Data
+Update Data
+Delete Data
+Configure Collections
+Querying Collections
+Query and Get
+Metadata Filtering
+Full Text Search
+Embeddings
+Embedding Functions
+Multimodal Embeddings
+CLI
+Installing the CLI
+Browse Collections
+Copy Collections
+DB Management
+Sample Apps
+Login
+Profile Management
+Run a Chroma Server
+Update
+Vacuum
+Chroma gives you everything you need for retrieval: store embeddings with metadata, search with dense and sparse vectors, filter by metadata, and retrieve across text, images, and more.
+​
+What Chroma Offers
+Document Storage
+Store documents and metadata.
+Embeddings
+Use any embedding model. OpenAI, Cohere, Hugging Face, sentence-transformers, and more.
+Vector Search
+Dense, sparse, and hybrid search. Query by similarity and combine multiple search strategies.
+Full-Text & Regex Search
+Keyword and regex search over your data without embeddings.
+Metadata Filtering
+Filter results at query time by metadata conditions.
+Multi-Modal Retrieval
+Index and search images, audio, and other modalities alongside text.
+​
+Quickstart
+Getting Started with the Chroma SDK
+Create a self-hosted or cloud database and add data to it using the Chroma SDK.
+Create a Chroma Cloud Database
+Create a scalable, zero-ops Chroma Cloud database to store your AI data.
+​
+Example Projects
+Agentic Search
+Build agents that iteratively search and refine results for complex queries.
+Code Search
+Index codebases to power coding agents using AST-aware chunking.
+​
+Open Source
+Chroma is licensed under
+Apache 2.0
+. Run it locally, self-host, or use
+Chroma Cloud
+for a managed, serverless experience.
+Was this page helpful?
+Suggest edits
+Getting Started
+Next
+⌘
+I
+Assistant
+Responses are generated using AI and may contain mistakes.
+Contact support

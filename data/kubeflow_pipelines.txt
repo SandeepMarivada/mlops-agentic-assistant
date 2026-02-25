@@ -1,0 +1,60 @@
+# Kubeflow Pipelines Overview
+# Source: https://www.kubeflow.org/docs/components/pipelines/overview/
+
+Overview
+What is Kubeflow Pipelines?
+Kubeflow Pipelines (KFP) is a platform for building and deploying portable and scalable machine learning (ML) workflows using containers on Kubernetes-based systems.
+With KFP you can author
+components
+and
+pipelines
+using the
+KFP Python SDK
+, compile pipelines to an
+intermediate representation YAML
+, and submit the pipeline to run on a KFP-conformant backend such as the
+open source KFP backend
+or
+Google Cloud Vertex AI Pipelines
+.
+The open source KFP backend is available as a core component of Kubeflow or as a standalone installation. To use KFP as part of the Kubeflow platform, follow the instructions for
+installing Kubeflow
+. To use KFP as a standalone application, follow the
+standalone installation
+instructions. To get started with your first pipeline, follow the
+Getting Started
+instructions.
+Why Kubeflow Pipelines?
+KFP enables data scientists and machine learning engineers to:
+Author end-to-end ML workflows natively in Python
+Create fully custom ML components or leverage an ecosystem of existing components
+Easily pass parameters and ML artifacts between pipeline components
+Easily manage, track, and visualize pipeline definitions, runs, experiments, and ML artifacts
+Efficiently use compute resources through parallel task execution and through caching to eliminating redundant executions
+Keep experimentation and iteration light and Python-centric, minimizing the need to (re)build and maintain containers
+Maintain cross-platform pipeline portability through a platform-neutral
+IR YAML pipeline definition
+What is a pipeline?
+A
+pipeline
+is a definition of a workflow that composes one or more
+components
+together to form a computational directed acyclic graph (DAG). At runtime, each component execution corresponds to a single container execution, which may create ML artifacts. Pipelines may also feature
+control flow
+.
+Next steps
+Install Kubeflow Pipelines
+Getting Started
+Learn more about
+authoring components
+Learn more about
+authoring pipelines
+Feedback
+Was this page helpful?
+Thank you for your feedback!
+We're sorry this page wasn't helpful.
+If you have a moment, please
+share your feedback
+so we can improve.
+Last modified June 17, 2025:
+pipelines: Update pipeline concept docs (#4074) (f3d6b27d)

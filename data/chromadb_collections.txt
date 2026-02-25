@@ -1,0 +1,54 @@
+# ChromaDB Collections
+# Source: https://docs.trychroma.com/docs/run-chroma/ephemeral-client
+
+Skip to main content
+Chroma Docs
+home page
+Docs
+Chroma Cloud
+Guides
+Integrations
+Reference
+Overview
+Introduction
+Getting Started
+Architecture
+Open Source
+Migration
+Troubleshooting
+Run Chroma
+Chroma Clients
+Client-Server Mode
+Collections
+Manage Collections
+Add Data
+Update Data
+Delete Data
+Configure Collections
+Querying Collections
+Query and Get
+Metadata Filtering
+Full Text Search
+Embeddings
+Embedding Functions
+Multimodal Embeddings
+CLI
+Installing the CLI
+Browse Collections
+Copy Collections
+DB Management
+Sample Apps
+Login
+Profile Management
+Run a Chroma Server
+Update
+Vacuum
+404
+Page Not Found
+We couldn't find the page. Maybe you were looking for one of these pages below?
+Running Chroma in Client-Server Mode
+Chroma Clients
+Chroma's Thin-Client
+Assistant
+Responses are generated using AI and may contain mistakes.
+Contact support
