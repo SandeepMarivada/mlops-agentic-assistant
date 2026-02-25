@@ -19,6 +19,7 @@ services:
       - .env                         # loads OPENROUTER_API_KEY and MODEL_NAME
     volumes:
       - chroma_data:/app/chroma_db   # persist vector DB across restarts
+      - hf_cache:/root/.cache/huggingface  # cache HuggingFace model after first download
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -43,3 +44,4 @@ services:
 
 volumes:
   chroma_data:                       # named volume — survives container restarts
+  hf_cache:                          # HuggingFace model cache — downloaded once, reused

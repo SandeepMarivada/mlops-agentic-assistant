@@ -1,42 +1,21 @@
-# ── Stage 1: Builder ──────────────────────────────────────────────────────────
-# Install dependencies in a separate layer for caching
-FROM python:3.12-slim AS builder
-
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y gcc g++ && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
-
-# Pre-download the HuggingFace embedding model so it's baked into the image
-# This avoids downloading it every time the container starts
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
-
-
-# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install build tools + curl (for healthcheck) in one layer, then clean up
+RUN apt-get update && apt-get install -y gcc g++ curl && rm -rf /var/lib/apt/lists/*
 
-# Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
-COPY --from=builder /root/.cache /root/.cache
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code (excludes files in .dockerignore)
+# Copy application code
 COPY config.py rag.py tools.py agent.py crew.py main.py ./
 COPY data/ ./data/
-
-# Make scripts in .local visible
-ENV PATH=/root/.local/bin:$PATH
 
 EXPOSE 8000
 
 # Healthcheck — Docker/compose uses this to determine container health
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
