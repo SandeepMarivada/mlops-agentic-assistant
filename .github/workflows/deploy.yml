@@ -1,14 +1,11 @@
 # ── CI/CD Pipeline: MLOps Agentic AI → AWS EC2 ───────────────────────────────
-# Module 7: CI/CD for ML — GitHub Actions
-# Module 9: Security & Governance — SSH key secrets, IAM-free deployment
-#
-# Pipeline stages:
-#   1. deploy  — SSHes into EC2, pulls latest code, rebuilds containers (main only)
+# Build Docker images on GitHub runner (fast), push to ghcr.io,
+# then EC2 just pulls and runs — no building on EC2.
 #
 # Required GitHub Secrets:
-#   EC2_HOST          — public IP or DNS of your EC2 instance
-#   EC2_USERNAME      — usually "ubuntu" or "ec2-user"
-#   EC2_SSH_KEY       — contents of your .pem private key file
+#   EC2_HOST           — public IP or DNS of your EC2 instance
+#   EC2_USERNAME       — usually "ubuntu"
+#   EC2_SSH_KEY        — contents of your .pem private key file
 #   OPENROUTER_API_KEY — written to .env on EC2
 
 name: CI/CD Pipeline — EC2 Deploy
@@ -21,67 +18,107 @@ on:
 
 jobs:
 
-  # ── Deploy to EC2 ────────────────────────────────────────────────────────────
-  deploy:
-    name: Deploy to AWS EC2
+  # ── Job 1: Build images on runner, push to GitHub Container Registry ─────────
+  build:
+    name: Build & Push Docker Images
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.api
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/mlops-api:latest
+
+      - name: Build and push UI image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.ui
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/mlops-ui:latest
+
+
+  # ── Job 2: Pull pre-built images on EC2 and start containers ─────────────────
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          command_timeout: 30m
+          envs: GHCR_TOKEN,REPO_OWNER,OPENROUTER_KEY
+          command_timeout: 15m
           script: |
             set -e
 
             echo "──────────────────────────────────────"
             echo "Deploying MLOps Agentic AI"
-            echo "Commit: ${{ github.sha }}"
             echo "──────────────────────────────────────"
 
-            # Clone repo on first deploy, pull on subsequent deploys
+            # GHCR image names must be lowercase
+            OWNER=$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lower:]')
+
+            # Login to GitHub Container Registry
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$OWNER" --password-stdin
+
+            # Clone repo on first deploy, pull on subsequent (for docker-compose.yml + data/)
             if [ ! -d "/app/mlops-agentic-ai" ]; then
               echo "First deploy — cloning repo..."
               mkdir -p /app
-              git clone https://github.com/${{ github.repository }}.git /app/mlops-agentic-ai
+              git clone https://github.com/SandeepMarivada/mlops-agentic-assistant.git /app/mlops-agentic-ai
             else
               echo "Pulling latest code..."
-              cd /app/mlops-agentic-ai
-              git pull origin main
+              cd /app/mlops-agentic-ai && git pull origin main
             fi
 
             cd /app/mlops-agentic-ai
 
-            # Write .env file from GitHub secrets (never committed to git)
-            echo "Writing .env file..."
-            echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" > .env
+            # Write .env file from GitHub secrets
+            echo "OPENROUTER_API_KEY=$OPENROUTER_KEY" > .env
             echo "MODEL_NAME=openai/gpt-4o-mini" >> .env
 
-            # Stop running containers
+            # Stop existing containers
             docker compose down --remove-orphans || true
 
-            # Free disk space: remove old images, build cache, stopped containers
-            echo "Freeing disk space..."
-            docker system prune -af
-            df -h /
+            # Pull pre-built images from GitHub Container Registry
+            echo "Pulling images built on GitHub runner..."
+            docker pull ghcr.io/$OWNER/mlops-api:latest
+            docker pull ghcr.io/$OWNER/mlops-ui:latest
 
-            # Build and restart containers
-            echo "Building and starting containers..."
-            docker compose up --build -d
+            # Start containers (no --build, uses pulled images)
+            docker compose up -d
 
-            # Wait a moment then verify both containers are running
             sleep 10
             docker compose ps
 
             echo "──────────────────────────────────────"
             echo "Deployment complete!"
-            echo "API : http://${{ secrets.EC2_HOST }}:8000"
-            echo "UI  : http://${{ secrets.EC2_HOST }}:8501"
             echo "──────────────────────────────────────"

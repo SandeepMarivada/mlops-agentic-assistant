@@ -9,6 +9,7 @@ version: "3.9"
 services:
 
   api:
+    image: ghcr.io/sandeepmarivada/mlops-api:latest  # pulled from GitHub Container Registry
     build:
       context: .
       dockerfile: Dockerfile.api
@@ -29,6 +30,7 @@ services:
     restart: unless-stopped
 
   ui:
+    image: ghcr.io/sandeepmarivada/mlops-ui:latest   # pulled from GitHub Container Registry
     build:
       context: .
       dockerfile: Dockerfile.ui
